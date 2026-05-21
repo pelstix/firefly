@@ -1,0 +1,26 @@
+FROM python:3.12-slim
+
+LABEL maintainer="qa-automation"
+LABEL description="Test runner for infralightio/test-integration-api"
+
+WORKDIR /app
+
+# System deps (wget used by healthcheck in compose)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    wget curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Python deps first (layer caching)
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Application code
+COPY . .
+
+# Ensure reports directory exists
+RUN mkdir -p /reports
+
+# Make runner script executable
+RUN chmod +x run_tests.sh
+
+CMD ["/app/run_tests.sh"]

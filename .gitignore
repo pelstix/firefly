@@ -1,0 +1,24 @@
+# Reports (generated artifacts)
+reports/
+*.html
+*.xml
+*.log
+*.csv
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Env
+.env
+
+# Locust
+locust_*.log

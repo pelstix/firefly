@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+
+  api:
+    image: infralightio/test-integration-api:latest
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/swagger/index.html"]
+      interval: 3s
+      timeout: 5s
+      retries: 20
+      start_period: 5s
+    restart: unless-stopped
+
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile.tests
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      API_BASE_URL: http://api:8080
+      USER1_NAME: test1
+      USER1_PASSWORD: test123
+      USER2_NAME: test2
+      USER2_PASSWORD: test456
+      ENVIRONMENT: ci
+      REPORT_DIR: /reports
+    volumes:
+      - ./reports:/reports
+    command: /app/run_tests.sh
+
+volumes: {}

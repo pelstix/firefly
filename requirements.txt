@@ -1,0 +1,26 @@
+# Core test framework
+pytest>=8.0,<10
+pytest-html>=4.0,<5          # HTML report generation
+pytest-xdist>=3.0,<4         # Parallel test execution (-n auto)
+pytest-timeout>=2.0,<3       # Per-test timeout enforcement
+pytest-metadata>=3.0,<4      # Report metadata
+
+# HTTP client
+requests>=2.31,<3
+
+# OpenAPI / Contract testing
+schemathesis>=3.20,<5        # Property-based API testing from OpenAPI spec
+jsonschema>=4.0,<5           # JSON Schema validation
+
+# Data validation / config
+pydantic>=2.0,<3
+pydantic-settings>=2.0,<3
+
+# Load testing
+locust>=2.20,<3
+
+# Reporting
+allure-pytest>=2.13,<3       # Allure report integration (optional)
+
+# Utilities
+python-dotenv>=1.0,<2        # .env file support (used by pydantic-settings)

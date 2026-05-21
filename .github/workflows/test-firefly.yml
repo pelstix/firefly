@@ -1,0 +1,77 @@
+name: API Test Suite
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Start API
+        run: |
+          docker pull infralightio/test-integration-api:latest
+          docker run -d --name api -p 8080:8080 infralightio/test-integration-api:latest
+
+      - name: Wait for API to be ready
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8080/swagger/index.html > /dev/null; then
+              echo "API is ready"
+              break
+            fi
+            echo "Waiting... ($i)"
+            sleep 2
+          done
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run pytest suite
+        env:
+          API_BASE_URL: http://localhost:8080
+        run: |
+          python -m pytest tests/ \
+            -m "not load" \
+            --html=reports/pytest_report.html \
+            --self-contained-html \
+            --junitxml=reports/junit.xml \
+            --tb=short \
+            -v \
+            || true
+
+      - name: Run load test
+        env:
+          API_BASE_URL: http://localhost:8080
+        run: |
+          python -m locust \
+            -f load/locustfile.py \
+            --headless \
+            --users 20 \
+            --spawn-rate 10 \
+            --run-time 60s \
+            --host http://localhost:8080 \
+            --html reports/load_report.html \
+            --csv reports/load \
+            || true
+
+      - name: Upload test reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-reports
+          path: reports/
+          retention-days: 30
